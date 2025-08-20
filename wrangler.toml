@@ -1,0 +1,10 @@
+name = "coders-app"
+main = "./src/index.ts"
+compatibility_date = "2025-08-20"
+
+[build]
+command = "npm run build"
+watch_dir = "src"
+
+[site]
+bucket = "./dist"
