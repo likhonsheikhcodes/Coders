@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  code-server:
+    image: codercom/code-server:latest
+    container_name: code-server
+    ports:
+      - "8080:8080"
+    environment:
+      - DOCKER_USER=${USER}
+    volumes:
+      - ~/.config:/home/coder/.config
+      - .:/home/coder/project
+      - ~/.ssh:/home/coder/.ssh:ro
+    user: "${UID}:${GID}"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+      - mcp-server
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - PYTHONPATH=/app
+
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/workspaces/Coders
+    environment:
+      - MCP_PORT=3001
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - NODE_ENV=development
+    depends_on:
+      - backend
